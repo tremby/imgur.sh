@@ -83,19 +83,19 @@ while [ $# -gt 0 ]; do
 	fi
 done
 
-# Put the URLs on the clipboard if we have xsel or xclip
-if [ $DISPLAY ]; then
+# Put the URLs on the clipboard if we can
+if type pbcopy &>/dev/null; then
+	echo -n "$clip" | pbcopy
+elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
 		echo -n "$clip" | xsel
 	elif type xclip &>/dev/null; then
 		echo -n "$clip" | xclip
-	elif type pbcopy &>/dev/null; then
-		echo -n "$clip" | pbcopy
 	else
-		echo "Haven't copied to the clipboard: no xsel, xclip, or pbcopy" >&2
+		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
 	fi
 else
-	echo "Haven't copied to the clipboard: no \$DISPLAY" >&2
+	echo "Haven't copied to the clipboard: no \$DISPLAY or pbcopy" >&2
 fi
 
 if $errors; then
