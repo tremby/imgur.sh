@@ -37,6 +37,8 @@ Instructions
 
         mv imgur.sh ~/bin/imgur
 
+   Or you could make a symlink instead.
+
 2. Make it executable
 
         chmod +x ~/bin/imgur
