@@ -56,7 +56,7 @@ Instructions
 
         imgur images/delicious/cake.png images/exciting/bungeejump.jpg
 
-The URLs will be displayed (and the delete page's URLs will be displayed on
+The URLs will be displayed (and the delete page URLs will be displayed on
 stderr). If you have `xsel`, `xclip`, or `pbcopy`, the URLs will also be put on
 the X selection, which you can then usually paste with a middle click.
 
