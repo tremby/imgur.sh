@@ -58,9 +58,19 @@ Instructions
 
         imgur images/delicious/cake.png images/exciting/bungeejump.jpg
 
+- Directly from a screenshot
+
+        import png:- | imgur
+
+  Note that the `import` command above is from Imagemagick,
+  and will await a selection being made on screen.
+
 The URLs will be displayed (and the delete page URLs will be displayed on
 stderr). If you have `xsel`, `xclip`, or `pbcopy`, the URLs will also be put on
 the X selection, which you can then usually paste with a middle click.
+
+If no filename is given, or if `-` is given as one of the arguments,
+an image is read from standard input.
 
 ### Rate limits
 

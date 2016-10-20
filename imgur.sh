@@ -14,9 +14,10 @@ client_id="${IMGUR_CLIENT_ID:=$default_client_id}"
 
 # Function to output usage instructions
 function usage {
-	echo "Usage: $(basename $0) <filename> [<filename> [...]]" >&2
+	echo "Usage: $(basename $0) [<filename> [...]]" >&2
 	echo "Upload images to imgur and output their new URLs to stdout. Each one's" >&2
 	echo "delete page is output to stderr between the view URLs." >&2
+	echo "A filename can be - to read from stdin. If no filename is given, stdin is read." >&2
 	echo "If xsel, xclip, or pbcopy is available, the URLs are put on the X selection for" >&2
 	echo "easy pasting." >&2
 }
@@ -26,9 +27,8 @@ if [ "$1" == "-h" -o "$1" == "--help" ]; then
 	usage
 	exit 0
 elif [ $# -eq 0 ]; then
-	echo "No file specified" >&2
-	usage
-	exit 16
+	echo "No file specified; reading from stdin" >&2
+	exec "$0" -
 fi
 
 # Check curl is available
@@ -46,7 +46,7 @@ while [ $# -gt 0 ]; do
 	shift
 
 	# Check file exists
-	if [ ! -f "$file" ]; then
+	if [ "$file" != "-" -a ! -f "$file" ]; then
 		echo "File '$file' doesn't exist; skipping" >&2
 		errors=true
 		continue
