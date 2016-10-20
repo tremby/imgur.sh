@@ -12,13 +12,17 @@ Upload images to [Imgur](http://imgur.com/) via a small bash script.
 History
 -------
 
-This is the repository for the Bash script which has been found on [Imgur's
-tools page](http://imgur.com/tools) since way back in 2009.
+This is the repository for the Bash script
+which has been found on [Imgur's tools page](http://imgur.com/tools)
+since way back in 2009, and now on
+[their new tools page](https://help.imgur.com/hc/en-us/articles/209592766-Tools-for-Imgur).
 
-I got infrequent but steady emails over the years with thanks and suggestions
-for improvements. A Google search shows the script has been reused and forked
-many times over the years. About time this had its own Git repository, so maybe
-the improvements can find their way back to the source.
+I received infrequent but steady emails over the years
+with thanks and suggestions for improvements.
+A Google search shows the script has been reused and forked
+many times over the years.
+About time this had its own Git repository,
+so maybe the improvements can find their way back to the source.
 
 Requirements
 ------------
@@ -65,9 +69,11 @@ Instructions
   Note that the `import` command above is from Imagemagick,
   and will await a selection being made on screen.
 
-The URLs will be displayed (and the delete page URLs will be displayed on
-stderr). If you have `xsel`, `xclip`, or `pbcopy`, the URLs will also be put on
-the X selection, which you can then usually paste with a middle click.
+The URLs will be displayed
+(and the delete page URLs will be displayed on stderr).
+If you have `xsel`, `xclip`, or `pbcopy`,
+the URLs will also be put on the X selection,
+which you can then usually paste with a middle click.
 
 If no filename is given, or if `-` is given as one of the arguments,
 an image is read from standard input.
