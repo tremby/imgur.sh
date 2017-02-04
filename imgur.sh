@@ -45,17 +45,24 @@ while [ $# -gt 0 ]; do
 	file="$1"
 	shift
 
-	# Check file exists
-	if [ "$file" != "-" -a ! -f "$file" ]; then
-		echo "File '$file' doesn't exist; skipping" >&2
-		errors=true
-		continue
-	fi
-
 	# Upload the image
-	response=$(curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=@$file" https://api.imgur.com/3/image.xml) 2>/dev/null
-	# The "Expect: " header is to get around a problem when using this through
-	# the Squid proxy. Not sure if it's a Squid bug or what.
+	if [[ "$file" =~ ^https?:// ]]; then
+		# URL -> imgur
+		response=$(curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$file" https://api.imgur.com/3/image.xml) 2>/dev/null
+		# The "Expect: " header is to get around a problem when using this through
+		# the Squid proxy. Not sure if it's a Squid bug or what.
+
+	else
+		# File -> imgur
+		# Check file exists
+		if [ "$file" != "-" -a ! -f "$file" ]; then
+			echo "File '$file' doesn't exist; skipping" >&2
+			errors=true
+			continue
+		fi
+
+		response=$(curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=@$file" https://api.imgur.com/3/image.xml) 2>/dev/null
+	fi
 	if [ $? -ne 0 ]; then
 		echo "Upload failed" >&2
 		errors=true
