@@ -22,6 +22,14 @@ function usage {
 	echo "easy pasting." >&2
 }
 
+# Function to upload a path
+# First argument should be a content spec understood by curl's -F option
+function upload {
+	curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$1" https://api.imgur.com/3/image.xml
+	# The "Expect: " header is to get around a problem when using this through
+	# the Squid proxy. Not sure if it's a Squid bug or what.
+}
+
 # Check arguments
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
 	usage
@@ -48,10 +56,7 @@ while [ $# -gt 0 ]; do
 	# Upload the image
 	if [[ "$file" =~ ^https?:// ]]; then
 		# URL -> imgur
-		response=$(curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$file" https://api.imgur.com/3/image.xml) 2>/dev/null
-		# The "Expect: " header is to get around a problem when using this through
-		# the Squid proxy. Not sure if it's a Squid bug or what.
-
+		response=$(upload "$file") 2>/dev/null
 	else
 		# File -> imgur
 		# Check file exists
@@ -60,9 +65,9 @@ while [ $# -gt 0 ]; do
 			errors=true
 			continue
 		fi
-
-		response=$(curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=@$file" https://api.imgur.com/3/image.xml) 2>/dev/null
+		response=$(upload "@$file") 2>/dev/null
 	fi
+
 	if [ $? -ne 0 ]; then
 		echo "Upload failed" >&2
 		errors=true
