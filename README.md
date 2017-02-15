@@ -10,15 +10,17 @@ Bart's Imgur uploader bash script
 Purpose
 -------
 
-Upload images to [Imgur](http://imgur.com/) via a small bash script.
+Upload images to [Imgur][imgur] via a small bash script.
+
+[imgur]: http://imgur.com/
 
 History
 -------
 
 This is the repository for the Bash script
-which has been found on [Imgur's tools page](http://imgur.com/tools)
+which has been found on [Imgur's tools page][tools-old]
 since way back in 2009, and now on
-[their new tools page](https://help.imgur.com/hc/en-us/articles/209592766-Tools-for-Imgur).
+[their new tools page][tools-new].
 
 I received infrequent but steady emails over the years
 with thanks and suggestions for improvements.
@@ -26,6 +28,9 @@ A Google search shows the script has been reused and forked
 many times over the years.
 About time this had its own Git repository,
 so maybe the improvements can find their way back to the source.
+
+[tools-old]: http://imgur.com/tools
+[tools-new]: https://help.imgur.com/hc/en-us/articles/209592766-Tools-for-Imgur
 
 Requirements
 ------------
@@ -51,9 +56,11 @@ Instructions
         chmod +x ~/bin/imgur
 
 3. *Optional, since I've provided a client ID:*
-   add your [client id](https://imgur.com/account/settings/apps)
+   add your [client id][settings]
    to the top of the script, replacing the provided one,
    or set it as the `IMGUR_CLIENT_ID` environment variable
+
+[settings]: https://imgur.com/account/settings/apps
 
 ### Uploading images
 
@@ -87,7 +94,9 @@ an image is read from standard input.
 
 ### Rate limits
 
-There are some [rate limits](https://api.imgur.com/#limits) with the API.
+There are some [rate limits][limits] with the API.
 The daily upload limit is shared by everyone using the same client ID,
 so if you're using the provided one and start to get errors,
 you might consider using your own client ID.
+
+[limits]: https://api.imgur.com/#limits
