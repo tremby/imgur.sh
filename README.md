@@ -12,7 +12,7 @@ Purpose
 
 Upload images to [Imgur][imgur] via a small bash script.
 
-[imgur]: http://imgur.com/
+[imgur]: https://imgur.com/
 
 History
 -------
