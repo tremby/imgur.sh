@@ -58,9 +58,13 @@ Instructions
 
         imgur images/hilarious/manfallingover.jpg
 
+- Single image from a URL
+
+        imgur https://example.com/egg.png
+
 - Multiple images
 
-        imgur images/delicious/cake.png images/exciting/bungeejump.jpg
+        imgur images/delicious/cake.png https://example.com/exciting/bungeejump.jpg
 
 - Directly from a screenshot
 
@@ -69,7 +73,7 @@ Instructions
   Note that the `import` command above is from Imagemagick,
   and will await a selection being made on screen.
 
-The URLs will be displayed
+The new URLs will be displayed
 (and the delete page URLs will be displayed on stderr).
 If you have `xsel`, `xclip`, or `pbcopy`,
 the URLs will also be put on the X selection,

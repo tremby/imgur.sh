@@ -14,7 +14,7 @@ client_id="${IMGUR_CLIENT_ID:=$default_client_id}"
 
 # Function to output usage instructions
 function usage {
-	echo "Usage: $(basename $0) [<filename> [...]]" >&2
+	echo "Usage: $(basename $0) [<filename|URL> [...]]" >&2
 	echo
 	echo "Upload images to imgur and output their new URLs to stdout. Each one's" >&2
 	echo "delete page is output to stderr between the view URLs." >&2
