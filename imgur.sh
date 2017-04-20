@@ -103,9 +103,9 @@ if type pbcopy &>/dev/null; then
 	echo -n "$clip" | pbcopy
 elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
-		echo -n "$clip" | xsel
+		echo -n "$clip" | xsel -b -i
 	elif type xclip &>/dev/null; then
-		echo -n "$clip" | xclip
+		echo -n "$clip" | xclip -selection clipboard -i
 	else
 		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
 	fi
