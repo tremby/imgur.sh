@@ -28,7 +28,7 @@ function usage {
 # Function to upload a path
 # First argument should be a content spec understood by curl's -F option
 function upload {
-	curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$1" https://api.imgur.com/3/image.xml
+	curl --progress-bar -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$1" https://api.imgur.com/3/image.xml
 	# The "Expect: " header is to get around a problem when using this through
 	# the Squid proxy. Not sure if it's a Squid bug or what.
 }
@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
 	# Upload the image
 	if [[ "$file" =~ ^https?:// ]]; then
 		# URL -> imgur
-		response=$(upload "$file") 2>/dev/null
+		response=$(upload "$file")
 	else
 		# File -> imgur
 		# Check file exists
@@ -68,7 +68,7 @@ while [ $# -gt 0 ]; do
 			errors=true
 			continue
 		fi
-		response=$(upload "@$file") 2>/dev/null
+		response=$(upload "@$file")
 	fi
 
 	if [ $? -ne 0 ]; then
