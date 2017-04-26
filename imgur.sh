@@ -15,6 +15,7 @@ client_id="${IMGUR_CLIENT_ID:=$default_client_id}"
 #DBG=1; # debug output on: This will keep TEMPFILES.
 DBG=;  # debug output off
 
+
 # Function to output usage instructions
 function usage {
 	echo "Usage: $(basename $0) [<filename|URL> [...]]" >&2
@@ -28,10 +29,9 @@ function usage {
 	echo "easy pasting." >&2
 }
 
-US=${0##*/};   # get filename without path
-TEMPFILES=;    # space separated list of tempfiles
 
-CLEANUP_DONE=; # avoid multiple cleanups; is set in _cleanup_()
+#########################################################
+
 
 cleanup() { local rc=$?;
   [ $CLEANUP_DONE ] && return;
@@ -84,6 +84,18 @@ function upload {
   [ $DBG ] && printf "\nResult output from curl command:\n__________________________________\n%s\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n" "$RESULT"
   return 0
 }
+
+#########################################################
+#### MAIN:
+
+US=${0##*/};   # get filename without path
+TEMPFILES=;    # space separated list of tempfiles
+
+CLEANUP_DONE=; # avoid multiple cleanups; is set in _cleanup_()
+
+# set up the trap for a clean exit:
+for i in 0 1 2 3 4 5 6 7 8 9; do trap "cleanup \"TRAP\" $i;" $i; done;
+
 
 # Check arguments
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
@@ -168,17 +180,4 @@ fi
 if $errors; then
 	exit 1
 fi
-
-
-
-#...
-
-
-
-#########################################################
-#### MAIN:
-
-# set up the trap for a clean exit:
-for i in 0 1 2 3 4 5 6 7 8 9; do trap "cleanup \"TRAP\" $i;" $i; done;
-
 
