@@ -12,6 +12,9 @@
 default_client_id=c9a6efb3d7932fd
 client_id="${IMGUR_CLIENT_ID:=$default_client_id}"
 
+#DBG=1; # debug output on: This will keep TEMPFILES.
+DBG=;  # debug output off
+
 # Function to output usage instructions
 function usage {
 	echo "Usage: $(basename $0) [<filename|URL> [...]]" >&2
@@ -25,12 +28,61 @@ function usage {
 	echo "easy pasting." >&2
 }
 
+US=${0##*/};   # get filename without path
+TEMPFILES=;    # space separated list of tempfiles
+
+CLEANUP_DONE=; # avoid multiple cleanups; is set in _cleanup_()
+
+cleanup() { local rc=$?;
+  [ $CLEANUP_DONE ] && return;
+  [ $DBG ] && printf "\nCLEANUP! ($rc) [$*]";
+  if [ -n "$TEMPFILES" ]; then
+    if [ $DBG ]; then
+      printf "\n\nATTENTION: KEEPING THE TEMPFILES:\n" 1>&2;
+      for a in $TEMPFILES; do
+        [ $DBG ] && { printf "\t\t'$a'\n"; continue; }
+        rm -Rf "$a" || printf "\t\t'$a' - FAILED to 'rm -f'!\n" \
+                    && printf "\t\t'$a' - removed\n" 1>&2;
+      done
+      TEMPFILES=;
+    else
+      [ $VRB ] && echo "Cleaning up..."
+      for a in $TEMPFILES; do rm -Rf "$a"; done; TEMPFILES=;
+    fi
+  fi
+
+  CLEANUP_DONE=1
+  exit $rc; # return does not suffice
+}
+
+
+set_TEMPFILE() {
+  [ -n "$1" ] && local suffix=".$1" || local suffix=".tmp"
+  [ -n "$2" ] && local prefix="$2." || local prefix="temp.mine.$US."
+  local now="$( date +"%Y-%m-%d_%H%M.%S")"
+  TEMPFILE=$(tempfile 2>/dev/null) || TEMPFILE="/tmp/$prefix$$@$now$suffix"
+  TEMPFILES="$TEMPFILES $TEMPFILE"
+}
+
+
+#########################################################
+
+
 # Function to upload a path
 # First argument should be a content spec understood by curl's -F option
+# Sets RESULT variable with output of curl call
 function upload {
-	curl -s -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$1" https://api.imgur.com/3/image.xml
+  set_TEMPFILE
+
 	# The "Expect: " header is to get around a problem when using this through
 	# the Squid proxy. Not sure if it's a Squid bug or what.
+	[ $DBG ] && printf "Running:\ncurl --progress-bar -H \"Authorization: Client-ID %s\" -H \"Expect: \" -F \"image=%s\" https://api.imgur.com/3/image.xml -o \"$TEMPFILE\"\n\nDEBUG-MODE, so the output file '$TEMPFILE' will be kept at the end of the script!\n\n" "$client_id" "$1"
+	curl --progress-bar -H "Authorization: Client-ID $client_id" -H "Expect: " -F "image=$1" https://api.imgur.com/3/image.xml -o "$TEMPFILE" || return $?
+
+  [ -s "$TEMPFILE" ] || return 1
+  RESULT="$(cat "$TEMPFILE")" || return 1
+  [ $DBG ] && printf "\nResult output from curl command:\n__________________________________\n%s\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n" "$RESULT"
+  return 0
 }
 
 # Check arguments
@@ -59,7 +111,7 @@ while [ $# -gt 0 ]; do
 	# Upload the image
 	if [[ "$file" =~ ^https?:// ]]; then
 		# URL -> imgur
-		response=$(upload "$file") 2>/dev/null
+		upload "$file"
 	else
 		# File -> imgur
 		# Check file exists
@@ -68,25 +120,25 @@ while [ $# -gt 0 ]; do
 			errors=true
 			continue
 		fi
-		response=$(upload "@$file") 2>/dev/null
+		upload "@$file"
 	fi
 
 	if [ $? -ne 0 ]; then
 		echo "Upload failed" >&2
 		errors=true
 		continue
-	elif echo "$response" | grep -q 'success="0"'; then
+	elif echo "$RESULT" | grep -q 'success="0"'; then
 		echo "Error message from imgur:" >&2
-		msg="${response##*<error>}"
+		msg="${RESULT##*<error>}"
 		echo "${msg%%</error>*}" >&2
 		errors=true
 		continue
 	fi
 
-	# Parse the response and output our stuff
-	url="${response##*<link>}"
+	# Parse the response RESULT and output our stuff
+	url="${RESULT##*<link>}"
 	url="${url%%</link>*}"
-	delete_hash="${response##*<deletehash>}"
+	delete_hash="${RESULT##*<deletehash>}"
 	delete_hash="${delete_hash%%</deletehash>*}"
 	echo $url | sed 's/^http:/https:/'
 	echo "Delete page: https://imgur.com/delete/$delete_hash" >&2
@@ -116,3 +168,17 @@ fi
 if $errors; then
 	exit 1
 fi
+
+
+
+#...
+
+
+
+#########################################################
+#### MAIN:
+
+# set up the trap for a clean exit:
+for i in 0 1 2 3 4 5 6 7 8 9; do trap "cleanup \"TRAP\" $i;" $i; done;
+
+
