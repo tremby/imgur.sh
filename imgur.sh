@@ -103,7 +103,7 @@ if type pbcopy &>/dev/null; then
 	echo -n "$clip" | pbcopy
 elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
-		echo -n "$clip" | xsel
+		echo -n "$clip" | xsel -i
 	elif type xclip &>/dev/null; then
 		echo -n "$clip" | xclip
 	else
