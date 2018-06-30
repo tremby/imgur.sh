@@ -105,7 +105,7 @@ elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
 		echo -n "$clip" | xsel -i
 	elif type xclip &>/dev/null; then
-		echo -n "$clip" | xclip
+		echo -n "$clip" | xclip -selection clipboard
 	else
 		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
 	fi
