@@ -60,6 +60,10 @@ Instructions
    to the top of the script, replacing the provided one,
    or set it as the `IMGUR_CLIENT_ID` environment variable
 
+4. To use the kde script do as follows:
+
+        mv imgur.desktop ~/.local/share/kservices5/ServiceMenus/
+
 [settings]: https://imgur.com/account/settings/apps
 
 ### Uploading images
@@ -82,6 +86,10 @@ Instructions
 
   Note that the `import` command above is from Imagemagick,
   and will await a selection being made on screen.
+
+- Directly from an existing file using the context menu in Plasma 5
+
+        Right click on the image > Actions > Upload to imgur
 
 The new URLs will be displayed
 (and the delete page URLs will be displayed on stderr).
