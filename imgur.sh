@@ -33,6 +33,17 @@ function upload {
 	# the Squid proxy. Not sure if it's a Squid bug or what.
 }
 
+
+# Shows a desktop notification that the screenshot has been uploaded
+# Requires libnotify
+function show_notification {
+	if type notify-send &>/dev/null;then
+		notify-send "Screenshot uploaded" "Link: $1\nDelete page: $2" --icon=dialog-information
+	else 
+		echo "Couldn't find notify-send, missing package libnotify" >&2
+	fi
+}
+
 # Check arguments
 if [ "$1" == "-h" -o "$1" == "--help" ]; then
 	usage
@@ -88,8 +99,9 @@ while [ $# -gt 0 ]; do
 	url="${url%%</link>*}"
 	delete_hash="${response##*<deletehash>}"
 	delete_hash="${delete_hash%%</deletehash>*}"
+	delete_image_url="https://imgur.com/delete/$delete_hash"
 	echo $url | sed 's/^http:/https:/'
-	echo "Delete page: https://imgur.com/delete/$delete_hash" >&2
+	echo "Delete page: $delete_image_url" >&2	
 
 	# Append the URL to a string so we can put them all on the clipboard later
 	clip+="$url"
@@ -113,6 +125,9 @@ else
 	echo "Haven't copied to the clipboard: no \$DISPLAY or pbcopy" >&2
 fi
 
-if $errors; then
+if ! $errors; then
+	# Notify over GUI if possible
+	show_notification $url $delete_image_url
+else 
 	exit 1
 fi
