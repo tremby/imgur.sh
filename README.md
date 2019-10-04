@@ -41,6 +41,7 @@ Requirements
 
 - `xsel`, `xclip`, or `pbcopy`, to automatically put the URLs on the X selection
   for easy pasting
+- `libnotify` to show a notification when the link is ready
 
 Instructions
 ------------
