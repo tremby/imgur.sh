@@ -21,8 +21,8 @@ function usage {
 	echo
 	echo "A filename can be - to read from stdin. If no filename is given, stdin is read." >&2
 	echo
-	echo "If xsel, xclip, or pbcopy is available, the URLs are put on the X selection for" >&2
-	echo "easy pasting." >&2
+	echo "If xsel, xclip, pbcopy, or clip is available," >&2
+	echo "the URLs are put on the X selection or clipboard for easy pasting." >&2
 }
 
 # Function to upload a path
@@ -101,6 +101,8 @@ done
 # Put the URLs on the clipboard if we can
 if type pbcopy &>/dev/null; then
 	echo -n "$clip" | pbcopy
+elif type clip &>/dev/null; then
+	echo -n "$clip" | clip
 elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
 		echo -n "$clip" | xsel -i
@@ -110,7 +112,7 @@ elif [ $DISPLAY ]; then
 		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
 	fi
 else
-	echo "Haven't copied to the clipboard: no \$DISPLAY or pbcopy" >&2
+	echo "Haven't copied to the clipboard: no \$DISPLAY or pbcopy or clip" >&2
 fi
 
 if $errors; then
