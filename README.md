@@ -39,7 +39,8 @@ Requirements
 
 ### Optional
 
-- `xsel`, `xclip`, or `pbcopy`, to automatically put the URLs on the X selection
+- `xsel`, `xclip`, `pbcopy` (Mac), or `clip` (Windows)
+  to automatically put the URLs on the X selection or clipboard
   for easy pasting
 
 Instructions
