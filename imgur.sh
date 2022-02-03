@@ -23,6 +23,7 @@ function usage {
 	echo
 	echo "If xsel, xclip, pbcopy, or clip is available," >&2
 	echo "the URLs are put on the X selection or clipboard for easy pasting." >&2
+	echo "Use environment variables to set special options for your clipboard program (see code)." >&2
 }
 
 # Function to upload a path
@@ -100,14 +101,14 @@ done
 
 # Put the URLs on the clipboard if we can
 if type pbcopy &>/dev/null; then
-	echo -n "$clip" | pbcopy
+	echo -n "$clip" | pbcopy $IMGUR_PBCOPY_OPTIONS
 elif type clip &>/dev/null; then
-	echo -n "$clip" | clip
+	echo -n "$clip" | clip $IMGUR_CLIP_OPTIONS
 elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
-		echo -n "$clip" | xsel -i
+		echo -n "$clip" | xsel -i $IMGUR_XSEL_OPTIONS
 	elif type xclip &>/dev/null; then
-		echo -n "$clip" | xclip
+		echo -n "$clip" | xclip $IMGUR_XCLIP_OPTIONS
 	else
 		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
 	fi

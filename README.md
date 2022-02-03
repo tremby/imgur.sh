@@ -86,9 +86,11 @@ Instructions
 
 The new URLs will be displayed
 (and the delete page URLs will be displayed on stderr).
-If you have `xsel`, `xclip`, or `pbcopy`,
-the URLs will also be put on the X selection,
+If you have `xsel` or `xclip`,
+the URLs will also be put on the primary X selection,
 which you can then usually paste with a middle click.
+If you have `pbcopy` (standard on Mac) or `clip` (standard on Windows),
+the URLs will be put on the clipboard.
 
 If no filename is given, or if `-` is given as one of the arguments,
 an image is read from standard input.
@@ -101,3 +103,19 @@ so if you're using the provided one and start to get errors,
 you might consider using your own client ID.
 
 [limits]: https://api.imgur.com/#limits
+
+### Configuring your clipboard program
+
+You can configure the clipboard program by providing options for it.
+
+An example use case is if you're using `xsel` or `xclip`
+and would rather user the clipboard than the primary selection.
+
+See the code for the environment variable names,
+but for the `xsel` example above,
+you'd set the environment variable `IMGUR_XSEL_OPTIONS` to `-b`:
+
+    IMGUR_XSEL_OPTIONS=-b imgur ...
+
+You can make this environment variable persistent;
+do a web search if you don't know how.
