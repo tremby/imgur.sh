@@ -89,7 +89,7 @@ while [ $# -gt 0 ]; do
 	url="${url%%</link>*}"
 	delete_hash="${response##*<deletehash>}"
 	delete_hash="${delete_hash%%</deletehash>*}"
-	echo $url | sed 's/^http:/https:/'
+	echo $url
 	echo "Delete page: https://imgur.com/delete/$delete_hash" >&2
 
 	# Append the URL to a string so we can put them all on the clipboard later
