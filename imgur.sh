@@ -7,7 +7,7 @@
 # The latest version can be found at https://github.com/tremby/imgur.sh
 
 # API Key provided by Bart;
-# replace with your own or specify yours as IMGUR_CLIENT_ID envionment variable
+# replace with your own or specify yours as IMGUR_CLIENT_ID environment variable
 # to avoid limits
 default_client_id=c9a6efb3d7932fd
 client_id="${IMGUR_CLIENT_ID:=$default_client_id}"
