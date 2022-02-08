@@ -53,133 +53,146 @@ upload () {
 }
  
 list () {
-    less ~/imgur.txt
+    less "$HOME/.imgur_history.txt"
 } 
  
 open () {
     if [ -n "$1" ]; then
-        for each_image in $( grep -io 'https://i\..*' imgur.txt  | tail "-$1" ); do
-            xdg-open "$each_image"
+        for each_image in $( grep -io 'https://i\..*' $HOME/.imgur_history.txt | tail "-$1" ); do
+            if command -v xdg-open &>/dev/null; then
+                xdg-open "$each_image" &>/dev/null
+            elif command -v open &>/dev/null; then
+                open "$each_image" &>/dev/null
+            else 
+                printf '%s\n' "Failed to open images." 
+            fi 
         done 
     else
-        xdg-open "$( grep -io 'https://i\..*' imgur.txt  | tail -1 )"
+        if command -v open &>/dev/null; then 
+            xdg-open "$( grep -io 'https://i\..*' $HOME/.imgur_history.txt | tail -1 )" &>/dev/null
+        elif command -v open &>/dev/null; then 
+            open "$( grep -io 'https://i\..*' $HOME/.imgur_history.txt | tail -1)" &>/dev/null
+        else
+            printf '%s\n' "Failed to open image." 
+        fi
     fi
 }
- 
+
 remove () {
     if [ -n "$1" ]; then
-        for hash in $( sed -n -e 's/^.*delete\///p' imgur.txt | tail "-$1" ); do
+        for hash in $( sed -n -e 's/^.*delete\///p' "$HOME/.imgur_history.txt" | tail "-$1" ); do
             curl --location -g --request DELETE "https://api.imgur.com/3/image/$hash" \
-                --header "Authorization: Client-ID $client_id"
-            done 
-        else
-            hash=$( sed -n -e 's/^.*delete\///p' imgur.txt | tail -1 )
-            curl --location -g --request DELETE "https://api.imgur.com/3/image/$hash" \
-                --header "Authorization: Client-ID $client_id"
+                --header "Authorization: Client-ID $client_id" 2>/dev/null
+        done 
+    else
+        hash=$( sed -n -e 's/^.*delete\///p' "$HOME/.imgur_history.txt" | tail -1 )
+        curl --location -g --request DELETE "https://api.imgur.com/3/image/$hash" \
+            --header "Authorization: Client-ID $client_id" &>/dev/null
     fi
 }
- 
+
 # Check arguments
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	usage
-	exit 0
+    usage
+    exit 0
 elif [ "$1" == "-l" ] || [ "$1" == "--list" ]; then
-	list
-	exit 0
+    list
+    exit 0
 elif [ "$1" == "-o" ] || [ "$1" == "--open" ]; then
     open "$2" 
-	exit 0
+    exit 0
 elif [ "$1" == "-r" ] || [ "$1" == "--remove" ]; then
     remove "$2" 
-	exit 0
+    exit 0
 elif [ $# -eq 0 ]; then
-	printf '%s\n' "No file specified; reading from stdin" >&2
-	exec "$0" -
+    printf '%s\n' "No file specified; reading from stdin" >&2
+    exec "$0" -
 fi
 
 # Check curl is available
 type curl &>/dev/null || {
-	printf '%s\n' "Couldn't find curl, which is required." >&2
-	exit 17
+    printf '%s\n' "Couldn't find curl, which is required." >&2
+    exit 17
 }
 
 clip=""
 errors=false
 
-printf '%s\n' "TIME:   $( date )" >> "$HOME/imgur.txt"
-     
+printf '\n%s\n\n' \
+    "======================================================================" >> \
+    "$HOME/.imgur_history.txt"
+    printf '%s\n' "START:  $( date )" >> "$HOME/.imgur_history.txt"
+
 # Loop through arguments
 while [ $# -gt 0 ]; do
-	file="$1"
-	shift
+    file="$1"
+    shift
 
-	# Upload the image
-	if [[ "$file" =~ ^https?:// ]]; then
-		# URL -> imgur
-		response=$(upload "$file") 2>/dev/null
-	else
-		# File -> imgur
-		# Check file exists
-		if [ "$file" != "-" ] && [ ! -f "$file" ]; then
-			printf '%s\n' "File '$file' doesn't exist; skipping" >&2
-            printf '%s\n' "ERROR:  $file doesn't exist" >> "$HOME/imgur.txt"
-			errors=true
-			continue
-		fi
-		response=$(upload "@$file") 2>/dev/null
-	fi
+    # Upload the image
+    if [[ "$file" =~ ^https?:// ]]; then
+        # URL -> imgur
+        response=$(upload "$file") 2>/dev/null
+    else
+        # File -> imgur
+        # Check file exists
+        if [ "$file" != "-" ] && [ ! -f "$file" ]; then
+            printf '%s\n' "File '$file' doesn't exist; skipping" >&2
+            printf '%s\n' "ERROR:  $file doesn't exist" >> "$HOME/.imgur_history.txt"
+            errors=true
+            continue
+        fi
+        response=$(upload "@$file") 2>/dev/null
+    fi
 
-	if [ $? -ne 0 ]; then
-		printf '%s\n' "Upload failed" >&2
-        printf '%s\n' "ERROR:  Upload failed" >> "$HOME/imgur.txt"
-		errors=true
-		continue
-	elif printf '%s\n' "$response" | grep -q 'success="0"'; then
-		printf '%s\n' "Error message from imgur:" >&2
-		msg="${response##*<error>}"
-		printf '%s\n' "${msg%%</error>*}" >&2
-        printf '%s\n' "ERROR:  ${msg%%</error>*}" >> "$HOME/imgur.txt"
-		errors=true
-		continue
-	fi
+    if [ $? -ne 0 ]; then
+        printf '%s\n' "Upload failed" >&2
+        printf '%s\n' "ERROR:  Upload failed" >> "$HOME/.imgur_history.txt"
+        errors=true
+        continue
+    elif printf '%s\n' "$response" | grep -q 'success="0"'; then
+        printf '%s\n' "Error message from imgur:" >&2
+        msg="${response##*<error>}"
+        printf '%s\n' "${msg%%</error>*}" >&2
+        printf '%s\n' "ERROR:  ${msg%%</error>*}" >> "$HOME/.imgur_history.txt"
+        errors=true
+        continue
+    fi
 
-	# Parse the response and output our stuff
-	url="${response##*<link>}"
-	url="${url%%</link>*}"
-	delete_hash="${response##*<deletehash>}"
-	delete_hash="${delete_hash%%</deletehash>*}"
-	printf '%s\n' "$url"
-	printf '%s\n' "Delete page: https://imgur.com/delete/$delete_hash" >&2
-    printf '%s\n' "FILE:   $file
-LINK:   $url
-DELETE: https://imgur.com/delete/$delete_hash" >> "$HOME/imgur.txt"
+    # Parse the response and output our stuff
+    url="${response##*<link>}"
+    url="${url%%</link>*}"
+    delete_hash="${response##*<deletehash>}"
+    delete_hash="${delete_hash%%</deletehash>*}"
+    printf '%s\n' "$url"
+    printf '%s\n' "Delete page: https://imgur.com/delete/$delete_hash" >&2
+    printf '\n%s\n' "FILE:   $file
+    LINK:   $url
+    DELETE: https://imgur.com/delete/$delete_hash" >> "$HOME/.imgur_history.txt"
 
-	# Append the URL to a string so we can put them all on the clipboard later
-	clip+="$url"
-	if [ $# -gt 0 ]; then
-		clip+=$'\n'
-	fi
+    # Append the URL to a string so we can put them all on the clipboard later
+    clip+="$url"
+    if [ $# -gt 0 ]; then
+        clip+=$'\n'
+    fi
 done
- 
-printf '\n%s\n\n' \
-"----------------------------------------------------------------------" >> \
-"$HOME/imgur.txt"
- 
+
+printf '\n%s\n' "END:    $( date )" >> "$HOME/.imgur_history.txt"
+
 # Put the URLs on the clipboard if we can
 if type pbcopy &>/dev/null; then
-	printf '%s' "$clip" | pbcopy $IMGUR_PBCOPY_OPTIONS
+    printf '%s' "$clip" | pbcopy $IMGUR_PBCOPY_OPTIONS
 elif type clip &>/dev/null; then
-	printf '%s' "$clip" | clip $IMGUR_CLIP_OPTIONS
+    printf '%s' "$clip" | clip $IMGUR_CLIP_OPTIONS
 elif [ "$DISPLAY" ]; then
-	if type xsel &>/dev/null; then
-		printf '%s' "$clip" | xsel -i $IMGUR_XSEL_OPTIONS
-	elif type xclip &>/dev/null; then
-		printf '%s' "$clip" | xclip $IMGUR_XCLIP_OPTIONS
-	else
-		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
-	fi
+    if type xsel &>/dev/null; then
+        printf '%s' "$clip" | xsel -i $IMGUR_XSEL_OPTIONS
+    elif type xclip &>/dev/null; then
+        printf '%s' "$clip" | xclip $IMGUR_XCLIP_OPTIONS
+    else
+        echo "Haven't copied to the clipboard: no xsel or xclip" >&2
+    fi
 else
-	echo "Haven't copied to the clipboard: no \$DISPLAY or pbcopy or clip" >&2
+    echo "Haven't copied to the clipboard: no \$DISPLAY or pbcopy or clip" >&2
 fi
 
 if $errors; then
