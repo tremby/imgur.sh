@@ -7,7 +7,7 @@
 # The latest version can be found at https://github.com/tremby/imgur.sh
 
 # API Key provided by Bart;
-# replace with your own or specify yours as IMGUR_CLIENT_ID environment variable
+# replace with your own or specify yours as IMGUR_CLIENT_ID envionment variable
 # to avoid limits
 default_client_id=c9a6efb3d7932fd
 client_id="${IMGUR_CLIENT_ID:=$default_client_id}"
@@ -23,7 +23,6 @@ function usage {
 	echo
 	echo "If xsel, xclip, pbcopy, or clip is available," >&2
 	echo "the URLs are put on the X selection or clipboard for easy pasting." >&2
-	echo "Use environment variables to set special options for your clipboard program (see code)." >&2
 }
 
 # Function to upload a path
@@ -89,26 +88,28 @@ while [ $# -gt 0 ]; do
 	url="${url%%</link>*}"
 	delete_hash="${response##*<deletehash>}"
 	delete_hash="${delete_hash%%</deletehash>*}"
-	echo $url
-	echo "Delete page: https://imgur.com/delete/$delete_hash" >&2
+	delete_page="https://imgur.com/delete/$delete_hash"
+	echo $url | sed 's/^http:/https:/'
+	echo "Delete page: $delete_page" >&2
 
 	# Append the URL to a string so we can put them all on the clipboard later
 	clip+="$url"
 	if [ $# -gt 0 ]; then
 		clip+=$'\n'
 	fi
+	echo "$(date +"%Y/%m/%d_%H:%M:%S")   $file   $url   $delete_page" >> $HOME/.imgur.sh.log
 done
 
 # Put the URLs on the clipboard if we can
 if type pbcopy &>/dev/null; then
-	echo -n "$clip" | pbcopy $IMGUR_PBCOPY_OPTIONS
+	echo -n "$clip" | pbcopy
 elif type clip &>/dev/null; then
-	echo -n "$clip" | clip $IMGUR_CLIP_OPTIONS
+	echo -n "$clip" | clip
 elif [ $DISPLAY ]; then
 	if type xsel &>/dev/null; then
-		echo -n "$clip" | xsel -i $IMGUR_XSEL_OPTIONS
+		echo -n "$clip" | xsel -i
 	elif type xclip &>/dev/null; then
-		echo -n "$clip" | xclip $IMGUR_XCLIP_OPTIONS
+		echo -n "$clip" | xclip
 	else
 		echo "Haven't copied to the clipboard: no xsel or xclip" >&2
 	fi
