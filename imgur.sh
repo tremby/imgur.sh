@@ -90,7 +90,8 @@ while [ $# -gt 0 ]; do
 	delete_hash="${response##*<deletehash>}"
 	delete_hash="${delete_hash%%</deletehash>*}"
 	delete_page="https://imgur.com/delete/$delete_hash"
-	echo $url | sed 's/^http:/https:/'
+	echo $url
+	[[ $url =~ "overload" ]] && exit 1
 	echo "Delete page: $delete_page" >&2
 
 	# Append the URL to a string so we can put them all on the clipboard later
@@ -98,8 +99,12 @@ while [ $# -gt 0 ]; do
 	if [ $# -gt 0 ]; then
 		clip+=$'\n'
 	fi
+
 	# Keep a log of the uploads
-	echo "$(date +"%Y/%m/%d_%H:%M:%S")   $file   $url   $delete_page" >> $HOME/.imgur.sh.log
+	IMGUR_LOG_FILE="$HOME/.imgur.sh.log"
+	if [ -n "${IMGUR_LOG_FILE-}" ]; then
+		echo "$(date +"%Y/%m/%d_%H:%M:%S")	$url	$delete_page	$file" >>$HOME/.imgur.sh.log
+	fi
 done
 
 # Put the URLs on the clipboard if we can
