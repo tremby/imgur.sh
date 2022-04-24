@@ -89,13 +89,21 @@ while [ $# -gt 0 ]; do
 	url="${url%%</link>*}"
 	delete_hash="${response##*<deletehash>}"
 	delete_hash="${delete_hash%%</deletehash>*}"
+	delete_page="https://imgur.com/delete/$delete_hash"
 	echo $url
-	echo "Delete page: https://imgur.com/delete/$delete_hash" >&2
+	[[ $url =~ "overload" ]] && exit 1
+	echo "Delete page: $delete_page" >&2
 
 	# Append the URL to a string so we can put them all on the clipboard later
 	clip+="$url"
 	if [ $# -gt 0 ]; then
 		clip+=$'\n'
+	fi
+
+	# Keep a log of the uploads
+	IMGUR_LOG_FILE="$HOME/.imgur.sh.log"
+	if [ -n "${IMGUR_LOG_FILE-}" ]; then
+		echo "$(date +"%Y/%m/%d_%H:%M:%S")	$url	$delete_page	$file" >>$HOME/.imgur.sh.log
 	fi
 done
 
